@@ -6,13 +6,13 @@ The automation searches for televisions, applies display-size and brand filters,
 
 ## Automated Scenario
 
-1. Open Amazon.in
-2. Search for `Television`
-3. Apply the **55-inch** display-size filter
+1. Open Amazon.in.
+2. Search for `Television`.
+3. Apply the **55-inch** display-size filter.
 4. Select two TV brands:
    - Sony
    - Samsung
-5. Open the first product from the filtered search results
+5. Open the first product from the filtered search results.
 6. Capture the following product information:
    - Product Title
    - Product Price
@@ -22,8 +22,8 @@ The automation searches for televisions, applies display-size and brand filters,
    - Brand
    - Availability
    - ASIN
-7. Write the captured information to `logs/product-details.log`
-8. Attach the complete product information to the Playwright HTML report
+7. Write the captured information to `logs/product-details.log`.
+8. Attach the complete product information to the Playwright HTML report.
 
 ## Technologies Used
 
@@ -36,7 +36,7 @@ The automation searches for televisions, applies display-size and brand filters,
 ## Project Structure
 
 ```text
-amazon-in-playwright-main/
+amazon-playwright-automation/
 │
 ├── pages/
 │   ├── HomePage.ts
@@ -62,38 +62,65 @@ amazon-in-playwright-main/
 
 ## Prerequisites
 
-Make sure the following are installed:
+Before running this project, make sure the following are installed:
 
 - Node.js
 - npm
 - Google Chrome
-- VS Code (recommended)
+- Git
+- Internet connection
+- VS Code or another code editor (optional)
 
-## Installation
+> **Note:** This project is configured to run using Google Chrome.  
+> Amazon.in is a live website, so product availability, prices, filters, brands, and page structure may change over time.
 
-Clone/download the project and open it in VS Code.
+## Clone the Repository
 
-Install the project dependencies:
+Clone the GitHub repository:
+
+```bash
+git clone https://github.com/Subarna201104/amazon-playwright-automation.git
+```
+
+Navigate to the project directory:
+
+```bash
+cd amazon-playwright-automation
+```
+
+## Install Dependencies
+
+Install all required project dependencies using:
 
 ```bash
 npm install
 ```
 
-If PowerShell blocks the npm script on Windows, use:
+If PowerShell blocks the `npm` script on Windows, use:
 
-```bash
+```powershell
 npm.cmd install
 ```
 
+The required project dependencies are defined in `package.json` and `package-lock.json`, so the `node_modules` folder does not need to be downloaded from the repository.
+
 ## Run the Automation
 
-To run the test with the browser visible:
+### Windows PowerShell
 
-```bash
+Run the test with the browser visible:
+
+```powershell
 npx.cmd playwright test --headed
 ```
 
-The automation will:
+### macOS / Linux / Other Terminals
+
+```bash
+npx playwright test --headed
+```
+
+The automation performs the following workflow:
 
 ```text
 Open Amazon.in
@@ -110,12 +137,12 @@ Capture product information
         ↓
 Write product-details.log
         ↓
-Generate Playwright report
+Generate Playwright HTML report
 ```
 
 ## Sample Execution Result
 
-A successful execution displays:
+A successful execution displays output similar to:
 
 ```text
 Running 1 test using 1 worker
@@ -125,15 +152,25 @@ Running 1 test using 1 worker
 1 passed
 ```
 
+> The exact execution output may vary because Amazon.in contains live and dynamically changing data.
+
 ## Playwright HTML Report
 
-After running the test, open the HTML report using:
+After running the test, open the Playwright HTML report.
 
-```bash
+### Windows PowerShell
+
+```powershell
 npx.cmd playwright show-report
 ```
 
-The report displays individual automation steps including:
+### macOS / Linux / Other Terminals
+
+```bash
+npx playwright show-report
+```
+
+The report displays the automation steps, including:
 
 - Open Amazon.in
 - Search for Television
@@ -160,7 +197,18 @@ The Playwright HTML report contains an attachment named:
 Amazon Product Details
 ```
 
-The attachment contains the captured product title, price, rating, About This Item, product specifications, brand, availability, ASIN, product URL, and capture timestamp.
+The attachment contains:
+
+- Product Title
+- Product Price
+- Customer Rating
+- About This Item
+- Product Specifications
+- Brand
+- Availability
+- ASIN
+- Product URL
+- Capture Timestamp
 
 ## Product Log
 
@@ -186,30 +234,48 @@ Availability:
 In stock
 ```
 
-Actual product information may change because the test captures live data from Amazon.in.
+Actual product information may change because the automation captures live data from Amazon.in.
 
 ## Design Approach
 
-The project follows the **Page Object Model (POM)** design pattern.
+The project follows the **Page Object Model (POM)** design pattern to separate page-specific actions from the test scenario.
 
-- `HomePage.ts` handles Amazon home-page actions.
-- `SearchResultsPage.ts` handles search results and filters.
-- `ProductPage.ts` handles product-information extraction.
-- `amazon-tv-search.spec.ts` contains the test scenario and validations.
-- `productLogger.ts` writes the captured product information to the log file.
+- `HomePage.ts` — handles Amazon home-page actions and search functionality.
+- `SearchResultsPage.ts` — handles search results, display-size filters, and brand filters.
+- `ProductPage.ts` — handles product-information extraction.
+- `amazon-tv-search.spec.ts` — contains the main test scenario and validations.
+- `productLogger.ts` — writes captured product information to the log file.
 
 ## Test Output
 
-After execution:
+After successful execution, the following outputs are generated.
+
+### Playwright Report
 
 ```text
 playwright-report/
 ```
 
-contains the Playwright HTML report.
+Contains the Playwright HTML test report.
+
+### Product Log
 
 ```text
 logs/product-details.log
 ```
 
-contains the captured Amazon product information.
+Contains the captured Amazon product information.
+
+## Environment Notes
+
+The project is designed to be portable across supported environments, provided the required prerequisites are installed.
+
+Before execution, ensure that:
+
+- Node.js and npm are installed.
+- Google Chrome is installed.
+- Internet connectivity is available.
+- Project dependencies have been installed using `npm install`.
+- Amazon.in is accessible from the execution environment.
+
+Because Amazon.in is a live website, changes to its UI, product availability, filters, or page structure may occasionally affect automation execution.
