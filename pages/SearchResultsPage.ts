@@ -7,135 +7,274 @@ export class SearchResultsPage {
 
   constructor(page: Page) {
     this.page = page;
+
+    // Left-side filter section in Amazon search results
     this.refinements = page.locator('#s-refinements');
-    this.resultCards = page.locator('[data-component-type="s-search-result"]');
+
+    // All product cards shown in search results
+    this.resultCards = page.locator(
+      '[data-component-type="s-search-result"]'
+    );
   }
 
+  // Wait until at least one product result is visible
   async waitForResults(): Promise<void> {
-    await this.resultCards.first().waitFor({ state: 'visible', timeout: 30_000 });
+    await this.resultCards.first().waitFor({
+      state: 'visible',
+      timeout: 30_000,
+    });
   }
 
   /**
-   * Amazon.in currently exposes 55-inch TVs as Popular Shopping Idea "55″"
-   * and as Screen Size range "53.0 to 61.9 in".
+   * Applies the 55-inch TV filter.
+   *
+   * Amazon may display the 55-inch filter in different ways:
+   *
+   * 1. 55″
+   * 2. 53.0 to 61.9 in
+   * 3. 55 inches
+   *
+   * So we try multiple locators.
    */
   async applyDisplaySize55Inch(): Promise<void> {
-    await this.refinements.waitFor({ state: 'visible', timeout: 20_000 });
+    await this.refinements.waitFor({
+      state: 'visible',
+      timeout: 20_000,
+    });
 
-    const inchIdea = this.refinements.getByRole('link', { name: /^55[″"”']$/ });
+    const inchIdea = this.refinements.getByRole('link', {
+      name: /^55[″"”']$/,
+    });
+
     const sizeRange = this.refinements.getByRole('link', {
       name: /Apply the filter 53\.0 to 61\.9 in/i,
     });
-    const inchesLabel = this.refinements.getByRole('link', { name: /55\s*(inches|inch)/i });
 
+    const inchesLabel = this.refinements.getByRole('link', {
+      name: /55\s*(inches|inch)/i,
+    });
+
+    // First preference: exact 55-inch option
     if (await inchIdea.isVisible().catch(() => false)) {
       await inchIdea.click();
-    } else if (await sizeRange.isVisible().catch(() => false)) {
+    }
+
+    // Second preference: Amazon range containing 55-inch TVs
+    else if (await sizeRange.isVisible().catch(() => false)) {
       await sizeRange.click();
-    } else {
+    }
+
+    // Third preference: text such as "55 inches"
+    else if (await inchesLabel.isVisible().catch(() => false)) {
       await inchesLabel.click();
     }
 
+    // If none of the 55-inch filters are available
+    else {
+      throw new Error('55-inch TV filter is not available');
+    }
+
     await this.page.waitForLoadState('domcontentloaded');
+
     await this.waitForResults();
+
+    console.log('55-inch TV filter selected');
   }
 
   /**
-   * Selects two brands. Prefers the given names (e.g. Sony, Samsung);
-   * if a preferred brand is not listed after size filters, uses other available brands.
+   * Select Sony and Samsung brand filters.
+   *
+   * This method selects exactly:
+   * Sony
+   * Samsung
+   *
+   * It will not select another brand as fallback.
    */
-  async applyBrands(preferredBrands: string[]): Promise<string[]> {
-    await this.refinements.waitFor({ state: 'visible', timeout: 20_000 });
+  async applyBrands(): Promise<string[]> {
+    await this.refinements.waitFor({
+      state: 'visible',
+      timeout: 20_000,
+    });
+
     await this.expandBrandList();
 
-    const selected: string[] = [];
-    for (const brand of preferredBrands) {
-      if (selected.length >= 2) break;
-      if (await this.clickBrandIfPresent(brand)) {
-        selected.push(brand);
+    const brands = ['Sony', 'Samsung'];
+
+    const selectedBrands: string[] = [];
+
+    for (const brand of brands) {
+      const selected = await this.clickBrandIfPresent(brand);
+
+      if (!selected) {
+        throw new Error(
+          `${brand} brand filter is not available`
+        );
       }
+
+      selectedBrands.push(brand);
+
+      console.log(`${brand} brand selected`);
     }
 
-    while (selected.length < 2) {
-      const fallback = await this.nextAvailableBrand(selected);
-      if (!fallback) break;
-      if (await this.clickBrandIfPresent(fallback)) {
-        selected.push(fallback);
-      } else {
-        break;
-      }
-    }
-
-    if (selected.length < 2) {
-      throw new Error(`Could not select two brands. Selected: ${selected.join(', ') || '(none)'}`);
-    }
-
-    return selected;
+    return selectedBrands;
   }
 
+  /**
+   * Expand the Brands section if Amazon displays
+   * a "See more" button.
+   */
   private async expandBrandList(): Promise<void> {
-    const brandsHeading = this.refinements.getByRole('heading', { name: /^Brands$/i });
-    await brandsHeading.scrollIntoViewIfNeeded();
-    const seeMore = this.refinements.getByRole('button', { name: /See more/i });
-    if (await seeMore.first().isVisible().catch(() => false)) {
-      await seeMore.first().click().catch(() => {});
+    const brandsHeading = this.refinements.getByRole('heading', {
+      name: /^Brands$/i,
+    });
+
+    if (
+      await brandsHeading
+        .isVisible()
+        .catch(() => false)
+    ) {
+      await brandsHeading.scrollIntoViewIfNeeded();
+    }
+
+    const seeMore = this.refinements.getByRole('button', {
+      name: /See more/i,
+    });
+
+    if (
+      await seeMore
+        .first()
+        .isVisible()
+        .catch(() => false)
+    ) {
+      await seeMore
+        .first()
+        .click()
+        .catch(() => {});
     }
   }
 
+  /**
+   * Creates locator for a specific brand.
+   *
+   * Example:
+   *
+   * Apply the filter Sony
+   *
+   * Apply the filter Samsung
+   */
   private brandFilterLink(brand: string): Locator {
     return this.refinements.getByRole('link', {
-      name: new RegExp(`Apply the filter ${escapeRegExp(brand)}\\b`, 'i'),
+      name: new RegExp(
+        `Apply the filter ${escapeRegExp(brand)}\\b`,
+        'i'
+      ),
     });
   }
 
-  private async clickBrandIfPresent(brand: string): Promise<boolean> {
+  /**
+   * Tries to select the requested brand.
+   *
+   * Returns:
+   * true  -> brand found and selected
+   * false -> brand not available
+   */
+  private async clickBrandIfPresent(
+    brand: string
+  ): Promise<boolean> {
     await this.expandBrandList();
+
     const link = this.brandFilterLink(brand);
-    if (!(await link.waitFor({ state: 'visible', timeout: 3000 }).then(() => true).catch(() => false))) {
+
+    const isAvailable = await link
+      .waitFor({
+        state: 'visible',
+        timeout: 5_000,
+      })
+      .then(() => true)
+      .catch(() => false);
+
+    if (!isAvailable) {
       return false;
     }
+
+    await link.scrollIntoViewIfNeeded();
+
     await link.click();
+
     await this.page.waitForLoadState('domcontentloaded');
+
     await this.waitForResults();
+
     return true;
   }
 
-  private async nextAvailableBrand(alreadySelected: string[]): Promise<string | null> {
-    await this.expandBrandList();
-    const brandLinks = this.refinements
-      .getByRole('list', { name: /^Brands$/i })
-      .getByRole('link', { name: /Apply the filter/i });
-    const count = await brandLinks.count();
-    for (let i = 0; i < count; i++) {
-      const accessibleName = (await brandLinks.nth(i).getAttribute('aria-label'))
-        ?? (await brandLinks.nth(i).innerText());
-      const match = accessibleName.match(/Apply the filter\s+(.+?)(?:\s+to narrow results)?$/i);
-      const name = (match?.[1] ?? accessibleName).trim();
-      if (!name) continue;
-      const already = alreadySelected.some((b) => b.toLowerCase() === name.toLowerCase());
-      if (!already) return name;
-    }
-    return null;
-  }
-
+  /**
+   * Returns the first valid product link
+   * from the Amazon search results.
+   */
   firstProductLink(): Locator {
-    return this.resultCards.filter({ has: this.page.locator('h2') }).locator('a[href*="/dp/"]').first();
+    return this.resultCards
+      .filter({
+        has: this.page.locator('h2'),
+      })
+      .locator('a[href*="/dp/"]')
+      .first();
   }
 
+  /**
+   * Opens the first product from the search results.
+   *
+   * Amazon may:
+   *
+   * 1. Open product in same tab
+   * OR
+   * 2. Open product in a new tab
+   *
+   * This method handles both situations.
+   */
   async openFirstProduct(): Promise<Page> {
     await this.waitForResults();
-    const productLink = this.firstProductLink();
-    await productLink.waitFor({ state: 'visible', timeout: 20_000 });
 
-    const popupPromise = this.page.waitForEvent('popup', { timeout: 5000 }).catch(() => null);
+    const productLink = this.firstProductLink();
+
+    await productLink.waitFor({
+      state: 'visible',
+      timeout: 20_000,
+    });
+
+    await productLink.scrollIntoViewIfNeeded();
+
+    const popupPromise = this.page
+      .waitForEvent('popup', {
+        timeout: 5_000,
+      })
+      .catch(() => null);
+
     await productLink.click();
+
     const popup = await popupPromise;
+
+    // If Amazon opened new tab, use popup.
+    // Otherwise continue using same page.
     const productPage = popup ?? this.page;
-    await productPage.waitForLoadState('domcontentloaded');
+
+    await productPage.waitForLoadState(
+      'domcontentloaded'
+    );
+
+    console.log('First TV product opened');
+
     return productPage;
   }
 }
 
+/**
+ * Escapes special characters before creating
+ * a dynamic regular expression.
+ */
 function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return value.replace(
+    /[.*+?^${}()|[\]\\]/g,
+    '\\$&'
+  );
 }
