@@ -1,0 +1,15 @@
+node_modules/
+
+test-results/
+
+playwright-report/
+
+blob-report/
+
+playwright/.cache/
+
+.DS_Store
+
+*.log
+!logs/
+!logs/product-details.log
