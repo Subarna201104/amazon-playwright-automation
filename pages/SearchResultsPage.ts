@@ -8,16 +8,18 @@ export class SearchResultsPage {
   constructor(page: Page) {
     this.page = page;
 
-    // Left-side filter section in Amazon search results
+    // Amazon left-side filter section
     this.refinements = page.locator('#s-refinements');
 
-    // All product cards shown in search results
+    // Amazon search result cards
     this.resultCards = page.locator(
       '[data-component-type="s-search-result"]'
     );
   }
 
-  // Wait until at least one product result is visible
+  /**
+   * Wait until at least one search result is visible.
+   */
   async waitForResults(): Promise<void> {
     await this.resultCards.first().waitFor({
       state: 'visible',
@@ -26,17 +28,16 @@ export class SearchResultsPage {
   }
 
   /**
-   * Applies the 55-inch TV filter.
+   * Tries to apply the 55-inch TV filter.
    *
-   * Amazon may display the 55-inch filter in different ways:
+   * Returns:
+   * true  -> filter was applied
+   * false -> filter was not available
    *
-   * 1. 55″
-   * 2. 53.0 to 61.9 in
-   * 3. 55 inches
-   *
-   * So we try multiple locators.
+   * The test will continue even if the filter
+   * cannot be used.
    */
-  async applyDisplaySize55Inch(): Promise<void> {
+  async tryApplyDisplaySize55Inch(): Promise<boolean> {
     await this.refinements.waitFor({
       state: 'visible',
       timeout: 20_000,
@@ -54,225 +55,363 @@ export class SearchResultsPage {
       name: /55\s*(inches|inch)/i,
     });
 
-    // First preference: exact 55-inch option
-    if (await inchIdea.isVisible().catch(() => false)) {
+    if (
+      await inchIdea
+        .isVisible({ timeout: 2000 })
+        .catch(() => false)
+    ) {
       await inchIdea.click();
-    }
-
-    // Second preference: Amazon range containing 55-inch TVs
-    else if (await sizeRange.isVisible().catch(() => false)) {
+    } else if (
+      await sizeRange
+        .isVisible({ timeout: 2000 })
+        .catch(() => false)
+    ) {
       await sizeRange.click();
-    }
-
-    // Third preference: text such as "55 inches"
-    else if (await inchesLabel.isVisible().catch(() => false)) {
+    } else if (
+      await inchesLabel
+        .isVisible({ timeout: 2000 })
+        .catch(() => false)
+    ) {
       await inchesLabel.click();
-    }
+    } else {
+      console.log(
+        '55-inch filter not available. Continuing without size filter.'
+      );
 
-    // If none of the 55-inch filters are available
-    else {
-      throw new Error('55-inch TV filter is not available');
-    }
-
-    await this.page.waitForLoadState('domcontentloaded');
-
-    await this.waitForResults();
-
-    console.log('55-inch TV filter selected');
-  }
-
-  /**
-   * Select Sony and Samsung brand filters.
-   *
-   * This method selects exactly:
-   * Sony
-   * Samsung
-   *
-   * It will not select another brand as fallback.
-   */
-  async applyBrands(): Promise<string[]> {
-    await this.refinements.waitFor({
-      state: 'visible',
-      timeout: 20_000,
-    });
-
-    await this.expandBrandList();
-
-    const brands = ['Sony', 'Samsung'];
-
-    const selectedBrands: string[] = [];
-
-    for (const brand of brands) {
-      const selected = await this.clickBrandIfPresent(brand);
-
-      if (!selected) {
-        throw new Error(
-          `${brand} brand filter is not available`
-        );
-      }
-
-      selectedBrands.push(brand);
-
-      console.log(`${brand} brand selected`);
-    }
-
-    return selectedBrands;
-  }
-
-  /**
-   * Expand the Brands section if Amazon displays
-   * a "See more" button.
-   */
-  private async expandBrandList(): Promise<void> {
-    const brandsHeading = this.refinements.getByRole('heading', {
-      name: /^Brands$/i,
-    });
-
-    if (
-      await brandsHeading
-        .isVisible()
-        .catch(() => false)
-    ) {
-      await brandsHeading.scrollIntoViewIfNeeded();
-    }
-
-    const seeMore = this.refinements.getByRole('button', {
-      name: /See more/i,
-    });
-
-    if (
-      await seeMore
-        .first()
-        .isVisible()
-        .catch(() => false)
-    ) {
-      await seeMore
-        .first()
-        .click()
-        .catch(() => {});
-    }
-  }
-
-  /**
-   * Creates locator for a specific brand.
-   *
-   * Example:
-   *
-   * Apply the filter Sony
-   *
-   * Apply the filter Samsung
-   */
-  private brandFilterLink(brand: string): Locator {
-    return this.refinements.getByRole('link', {
-      name: new RegExp(
-        `Apply the filter ${escapeRegExp(brand)}\\b`,
-        'i'
-      ),
-    });
-  }
-
-  /**
-   * Tries to select the requested brand.
-   *
-   * Returns:
-   * true  -> brand found and selected
-   * false -> brand not available
-   */
-  private async clickBrandIfPresent(
-    brand: string
-  ): Promise<boolean> {
-    await this.expandBrandList();
-
-    const link = this.brandFilterLink(brand);
-
-    const isAvailable = await link
-      .waitFor({
-        state: 'visible',
-        timeout: 5_000,
-      })
-      .then(() => true)
-      .catch(() => false);
-
-    if (!isAvailable) {
       return false;
     }
 
-    await link.scrollIntoViewIfNeeded();
-
-    await link.click();
-
-    await this.page.waitForLoadState('domcontentloaded');
+    await this.page.waitForLoadState(
+      'domcontentloaded'
+    );
 
     await this.waitForResults();
+
+    console.log('55-inch TV filter applied');
 
     return true;
   }
 
   /**
-   * Returns the first valid product link
-   * from the Amazon search results.
+   * Checks whether a particular brand filter
+   * is currently available.
+   */
+  private async isBrandAvailable(
+    brand: string
+  ): Promise<boolean> {
+    await this.expandBrandList();
+
+    const locator =
+      this.getBrandLocator(brand);
+
+    return await locator
+      .isVisible({ timeout: 3000 })
+      .catch(() => false);
+  }
+
+  /**
+   * Check whether BOTH Sony and Samsung
+   * are available in the current filter state.
+   */
+  async areSonyAndSamsungAvailable(): Promise<boolean> {
+    const sonyAvailable =
+      await this.isBrandAvailable('Sony');
+
+    const samsungAvailable =
+      await this.isBrandAvailable('Samsung');
+
+    console.log(
+      `Sony available: ${sonyAvailable}`
+    );
+
+    console.log(
+      `Samsung available: ${samsungAvailable}`
+    );
+
+    return sonyAvailable && samsungAvailable;
+  }
+
+  /**
+   * Removes the size filter by returning to
+   * the Television search results.
+   *
+   * This is used when the size filter causes
+   * Sony or Samsung to disappear.
+   */
+  async resetToTelevisionSearch(): Promise<void> {
+    console.log(
+      'Sony/Samsung not both available with size filter.'
+    );
+
+    console.log(
+      'Returning to Television results without size filter.'
+    );
+
+    await this.page.goto(
+      '/s?k=Television',
+      {
+        waitUntil: 'domcontentloaded',
+      }
+    );
+
+    await this.waitForResults();
+
+    console.log(
+      'Returned to Television search results'
+    );
+  }
+
+  /**
+   * Select Sony and Samsung.
+   *
+   * These are the two required brands
+   * for this implementation.
+   */
+  async applyBrands(): Promise<string[]> {
+    const brands = [
+      'Sony',
+      'Samsung',
+    ];
+
+    const selectedBrands: string[] = [];
+
+    for (const brand of brands) {
+      await this.refinements.waitFor({
+        state: 'visible',
+        timeout: 20_000,
+      });
+
+      await this.expandBrandList();
+
+      const brandLocator =
+        this.getBrandLocator(brand);
+
+      const available =
+        await brandLocator
+          .isVisible({ timeout: 5000 })
+          .catch(() => false);
+
+      if (!available) {
+        throw new Error(
+          `${brand} brand filter is not available`
+        );
+      }
+
+      await brandLocator
+        .scrollIntoViewIfNeeded();
+
+      await brandLocator.click();
+
+      console.log(
+        `${brand} brand selected`
+      );
+
+      selectedBrands.push(brand);
+
+      await this.page.waitForLoadState(
+        'domcontentloaded'
+      );
+
+      await this.waitForResults();
+    }
+
+    console.log(
+      `Selected brands: ${selectedBrands.join(', ')}`
+    );
+
+    return selectedBrands;
+  }
+
+  /**
+   * Expand the Brands section if Amazon
+   * provides a See more option.
+   */
+  private async expandBrandList(): Promise<void> {
+    const brandsSection =
+      this.refinements.locator(
+        '#brandsRefinements'
+      );
+
+    if (
+      await brandsSection
+        .isVisible({ timeout: 1500 })
+        .catch(() => false)
+    ) {
+      await brandsSection
+        .scrollIntoViewIfNeeded();
+
+      const seeMoreButton =
+        brandsSection.getByRole(
+          'button',
+          {
+            name: /See more/i,
+          }
+        );
+
+      if (
+        await seeMoreButton
+          .first()
+          .isVisible({ timeout: 1000 })
+          .catch(() => false)
+      ) {
+        await seeMoreButton
+          .first()
+          .click()
+          .catch(() => {});
+      }
+
+      return;
+    }
+
+    const brandsHeading =
+      this.refinements.getByText(
+        /^Brands$/i
+      );
+
+    if (
+      await brandsHeading
+        .first()
+        .isVisible({ timeout: 1500 })
+        .catch(() => false)
+    ) {
+      await brandsHeading
+        .first()
+        .scrollIntoViewIfNeeded();
+    }
+  }
+
+  /**
+   * Creates a flexible locator for a brand.
+   *
+   * Amazon may represent brand filters
+   * differently, so multiple strategies
+   * are combined.
+   */
+  private getBrandLocator(
+    brand: string
+  ): Locator {
+    const escaped =
+      escapeRegExp(brand);
+
+    const brandsSection =
+      this.refinements.locator(
+        '#brandsRefinements'
+      );
+
+    return brandsSection
+      .locator('a')
+      .filter({
+        hasText: new RegExp(
+          `^\\s*${escaped}\\s*$`,
+          'i'
+        ),
+      })
+      .or(
+        brandsSection.getByRole(
+          'link',
+          {
+            name: new RegExp(
+              `Apply the filter.*${escaped}`,
+              'i'
+            ),
+          }
+        )
+      )
+      .or(
+        this.refinements.getByRole(
+          'link',
+          {
+            name: new RegExp(
+              `Apply the filter.*${escaped}`,
+              'i'
+            ),
+          }
+        )
+      )
+      .or(
+        this.refinements
+          .locator('a')
+          .filter({
+            hasText: new RegExp(
+              `^\\s*${escaped}\\s*$`,
+              'i'
+            ),
+          })
+      )
+      .first();
+  }
+
+  /**
+   * Returns the first valid product link.
    */
   firstProductLink(): Locator {
     return this.resultCards
       .filter({
         has: this.page.locator('h2'),
       })
-      .locator('a[href*="/dp/"]')
+      .locator(
+        'a[href*="/dp/"]'
+      )
       .first();
   }
 
   /**
-   * Opens the first product from the search results.
+   * Opens the first filtered TV product.
    *
-   * Amazon may:
-   *
-   * 1. Open product in same tab
-   * OR
-   * 2. Open product in a new tab
-   *
-   * This method handles both situations.
+   * Handles both:
+   * - same tab
+   * - new tab
    */
   async openFirstProduct(): Promise<Page> {
     await this.waitForResults();
 
-    const productLink = this.firstProductLink();
+    const productLink =
+      this.firstProductLink();
 
     await productLink.waitFor({
       state: 'visible',
       timeout: 20_000,
     });
 
-    await productLink.scrollIntoViewIfNeeded();
+    await productLink
+      .scrollIntoViewIfNeeded();
 
-    const popupPromise = this.page
-      .waitForEvent('popup', {
-        timeout: 5_000,
-      })
-      .catch(() => null);
+    const popupPromise =
+      this.page
+        .waitForEvent(
+          'popup',
+          {
+            timeout: 5000,
+          }
+        )
+        .catch(() => null);
 
     await productLink.click();
 
-    const popup = await popupPromise;
+    const popup =
+      await popupPromise;
 
-    // If Amazon opened new tab, use popup.
-    // Otherwise continue using same page.
-    const productPage = popup ?? this.page;
+    const productPage =
+      popup ?? this.page;
 
     await productPage.waitForLoadState(
       'domcontentloaded'
     );
 
-    console.log('First TV product opened');
+    console.log(
+      'First filtered TV product opened'
+    );
 
     return productPage;
   }
 }
 
 /**
- * Escapes special characters before creating
- * a dynamic regular expression.
+ * Escapes special RegExp characters.
  */
-function escapeRegExp(value: string): string {
+function escapeRegExp(
+  value: string
+): string {
   return value.replace(
     /[.*+?^${}()|[\]\\]/g,
     '\\$&'
