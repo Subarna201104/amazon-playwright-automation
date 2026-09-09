@@ -9,11 +9,10 @@ test.describe(
   () => {
 
     test(
-      'Search TVs, select Sony and Samsung, and log the first product',
+      'Search 55-inch TVs, select brands, and log the first product',
       async ({ page }, testInfo) => {
 
-        const homePage =
-          new HomePage(page);
+        const homePage = new HomePage(page);
 
         const searchResultsPage =
           new SearchResultsPage(page);
@@ -63,46 +62,28 @@ test.describe(
           }
         );
 
-        // STEP 4 - Try 55-inch filter
-        let sizeFilterApplied = false;
-
+        // STEP 4 - Apply 55-inch filter
         await test.step(
-          'Try 55-inch TV filter',
+          'Apply 55-inch TV filter',
           async () => {
 
-            sizeFilterApplied =
+            const sizeFilterApplied =
               await searchResultsPage
                 .tryApplyDisplaySize55Inch();
 
+            expect(
+              sizeFilterApplied
+            ).toBe(true);
+
             console.log(
-              `55-inch filter applied: ${sizeFilterApplied}`
+              '55-inch filter applied successfully'
             );
           }
         );
 
-        // STEP 5 - Check whether Sony and Samsung
-        // are still available after size filtering
-        if (sizeFilterApplied) {
-
-          await test.step(
-            'Check Sony and Samsung availability',
-            async () => {
-
-              const bothAvailable =
-                await searchResultsPage
-                  .areSonyAndSamsungAvailable();
-
-              if (!bothAvailable) {
-                await searchResultsPage
-                  .resetToTelevisionSearch();
-              }
-            }
-          );
-        }
-
-        // STEP 6 - Select Sony and Samsung
+        // STEP 5 - Select two brands
         await test.step(
-          'Select Sony and Samsung brands',
+          'Select TV brands',
           async () => {
 
             const selectedBrands =
@@ -115,19 +96,11 @@ test.describe(
 
             expect(
               selectedBrands
-            ).toContain('Sony');
-
-            expect(
-              selectedBrands
-            ).toContain('Samsung');
-
-            expect(
-              selectedBrands
             ).toHaveLength(2);
           }
         );
 
-        // STEP 7 - Open first product
+        // STEP 6 - Open first filtered product
         let productPage: ProductPage;
 
         await test.step(
@@ -139,9 +112,7 @@ test.describe(
                 .openFirstProduct();
 
             productPage =
-              new ProductPage(
-                openedPage
-              );
+              new ProductPage(openedPage);
 
             console.log(
               'First filtered TV product opened'
@@ -149,7 +120,7 @@ test.describe(
           }
         );
 
-        // STEP 8 - Capture product information
+        // STEP 7 - Capture product information
         const productInfo =
           await test.step(
             'Capture complete product information',
@@ -166,6 +137,27 @@ test.describe(
               return info;
             }
           );
+
+        // STEP 8 - Validate that product is 55 inch
+        await test.step(
+          'Validate 55-inch product',
+          async () => {
+
+            const productText = `
+              ${productInfo.title}
+              ${productInfo.productDetails}
+              ${productInfo.extras['About this item']}
+            `;
+
+            expect(
+              productText
+            ).toMatch(/55\s*(inch|inches)/i);
+
+            console.log(
+              'Validated that opened TV is 55 inches'
+            );
+          }
+        );
 
         // STEP 9 - Product title
         await test.step(
@@ -225,7 +217,7 @@ test.describe(
           }
         );
 
-        // STEP 13 - Specifications
+        // STEP 13 - Product Specifications
         await test.step(
           'Capture Product Specifications',
           async () => {
