@@ -11,14 +11,14 @@ export class SearchResultsPage {
     // Amazon left-side filter section
     this.refinements = page.locator('#s-refinements');
 
-    // Amazon search result cards
+    // Amazon product cards
     this.resultCards = page.locator(
       '[data-component-type="s-search-result"]'
     );
   }
 
   /**
-   * Wait until at least one product result is visible.
+   * Wait until Amazon search results are visible.
    */
   async waitForResults(): Promise<void> {
     await this.resultCards.first().waitFor({
@@ -28,9 +28,58 @@ export class SearchResultsPage {
   }
 
   /**
+   * Select Sony and Samsung.
+   *
+   * No fallback brand is allowed.
+   *
+   * Required brands:
+   * 1. Sony
+   * 2. Samsung
+   */
+  async applyBrands(): Promise<string[]> {
+    const brands = ['Sony', 'Samsung'];
+
+    const selectedBrands: string[] = [];
+
+    for (const brand of brands) {
+      await this.refinements.waitFor({
+        state: 'visible',
+        timeout: 20_000,
+      });
+
+      await this.expandBrandList();
+
+      const selected =
+        await this.clickBrandIfAvailable(brand);
+
+      if (!selected) {
+        throw new Error(
+          `${brand} brand filter is not available`
+        );
+      }
+
+      selectedBrands.push(brand);
+
+      console.log(
+        `${brand} brand selected`
+      );
+    }
+
+    console.log(
+      `Final selected brands: ${selectedBrands.join(', ')}`
+    );
+
+    return selectedBrands;
+  }
+
+  /**
    * Apply the 55-inch TV filter.
    *
-   * This is compulsory for the assignment.
+   * 55-inch is compulsory.
+   *
+   * Amazon may represent 55-inch in
+   * different forms, so we check
+   * multiple possibilities.
    */
   async tryApplyDisplaySize55Inch(): Promise<boolean> {
     await this.refinements.waitFor({
@@ -38,17 +87,32 @@ export class SearchResultsPage {
       timeout: 20_000,
     });
 
-    const exact55 = this.refinements.getByRole('link', {
-      name: /^55[″"”']$/,
-    });
+    // Example: 55″
+    const exact55 =
+      this.refinements.getByRole(
+        'link',
+        {
+          name: /^55[″"”']$/,
+        }
+      );
 
-    const sizeRange = this.refinements.getByRole('link', {
-      name: /Apply the filter 53\.0 to 61\.9 in/i,
-    });
+    // Example: 53.0 to 61.9 in
+    const sizeRange =
+      this.refinements.getByRole(
+        'link',
+        {
+          name: /Apply the filter 53\.0 to 61\.9 in/i,
+        }
+      );
 
-    const inchesLabel = this.refinements.getByRole('link', {
-      name: /55\s*(inches|inch)/i,
-    });
+    // Example: 55 inches
+    const inchesLabel =
+      this.refinements.getByRole(
+        'link',
+        {
+          name: /55\s*(inch|inches)/i,
+        }
+      );
 
     if (
       await exact55
@@ -56,21 +120,39 @@ export class SearchResultsPage {
         .catch(() => false)
     ) {
       await exact55.click();
-    } else if (
+
+      console.log(
+        'Exact 55-inch filter selected'
+      );
+    }
+
+    else if (
       await sizeRange
         .isVisible({ timeout: 3000 })
         .catch(() => false)
     ) {
       await sizeRange.click();
-    } else if (
+
+      console.log(
+        '55-inch size range selected'
+      );
+    }
+
+    else if (
       await inchesLabel
         .isVisible({ timeout: 3000 })
         .catch(() => false)
     ) {
       await inchesLabel.click();
-    } else {
+
+      console.log(
+        '55-inch filter selected'
+      );
+    }
+
+    else {
       throw new Error(
-        '55-inch TV filter is not available'
+        '55-inch TV filter is not available after selecting Sony and Samsung'
       );
     }
 
@@ -88,87 +170,10 @@ export class SearchResultsPage {
   }
 
   /**
-   * Select exactly two available brands.
+   * Expand Amazon's Brands section.
    *
-   * Preference order:
-   * 1. Sony
-   * 2. Samsung
-   *
-   * If one is unavailable after applying 55-inch,
-   * another available brand is selected instead.
-   */
-  async applyBrands(): Promise<string[]> {
-    await this.refinements.waitFor({
-      state: 'visible',
-      timeout: 20_000,
-    });
-
-    await this.expandBrandList();
-
-    const selectedBrands: string[] = [];
-
-    const preferredBrands = [
-      'Sony',
-      'Samsung',
-    ];
-
-    // Try Sony and Samsung first
-    for (const brand of preferredBrands) {
-      if (selectedBrands.length === 2) {
-        break;
-      }
-
-      const selected =
-        await this.clickBrandIfAvailable(
-          brand
-        );
-
-      if (selected) {
-        selectedBrands.push(brand);
-
-        console.log(
-          `${brand} brand selected`
-        );
-      } else {
-        console.log(
-          `${brand} not available after 55-inch filter`
-        );
-      }
-    }
-
-    // If fewer than two preferred brands were available,
-    // select other available brands.
-    while (selectedBrands.length < 2) {
-      const fallbackBrand =
-        await this.selectNextAvailableBrand(
-          selectedBrands
-        );
-
-      if (!fallbackBrand) {
-        throw new Error(
-          'Two available TV brands could not be selected'
-        );
-      }
-
-      selectedBrands.push(
-        fallbackBrand
-      );
-
-      console.log(
-        `${fallbackBrand} brand selected as fallback`
-      );
-    }
-
-    console.log(
-      `Final selected brands: ${selectedBrands.join(', ')}`
-    );
-
-    return selectedBrands;
-  }
-
-  /**
-   * Expand the Brands section if Amazon
-   * shows a "See more" option.
+   * If Amazon displays "See more",
+   * this method clicks it.
    */
   private async expandBrandList(): Promise<void> {
     const brandsSection =
@@ -178,7 +183,7 @@ export class SearchResultsPage {
 
     if (
       await brandsSection
-        .isVisible({ timeout: 1500 })
+        .isVisible({ timeout: 2000 })
         .catch(() => false)
     ) {
       await brandsSection
@@ -204,9 +209,27 @@ export class SearchResultsPage {
           .catch(() => {});
       }
 
+      const seeMoreText =
+        brandsSection.getByText(
+          /See more/i
+        );
+
+      if (
+        await seeMoreText
+          .first()
+          .isVisible({ timeout: 1000 })
+          .catch(() => false)
+      ) {
+        await seeMoreText
+          .first()
+          .click()
+          .catch(() => {});
+      }
+
       return;
     }
 
+    // Fallback if Amazon changes its HTML structure
     const brandsHeading =
       this.refinements.getByText(
         /^Brands$/i
@@ -215,7 +238,7 @@ export class SearchResultsPage {
     if (
       await brandsHeading
         .first()
-        .isVisible({ timeout: 1500 })
+        .isVisible({ timeout: 2000 })
         .catch(() => false)
     ) {
       await brandsHeading
@@ -225,29 +248,38 @@ export class SearchResultsPage {
   }
 
   /**
-   * Try selecting a particular brand.
+   * Try to select a specific brand.
+   *
+   * Returns:
+   *
+   * true  -> brand was found and selected
+   * false -> brand was not found
    */
   private async clickBrandIfAvailable(
     brand: string
   ): Promise<boolean> {
     await this.expandBrandList();
 
-    const locator =
+    const brandLocator =
       this.getBrandLocator(brand);
 
     const available =
-      await locator
-        .isVisible({ timeout: 4000 })
+      await brandLocator
+        .isVisible({ timeout: 5000 })
         .catch(() => false);
 
     if (!available) {
+      console.log(
+        `${brand} brand is not currently visible`
+      );
+
       return false;
     }
 
-    await locator
+    await brandLocator
       .scrollIntoViewIfNeeded();
 
-    await locator.click();
+    await brandLocator.click();
 
     await this.page.waitForLoadState(
       'domcontentloaded'
@@ -259,114 +291,15 @@ export class SearchResultsPage {
   }
 
   /**
-   * Select another available brand.
-   */
-  private async selectNextAvailableBrand(
-    alreadySelected: string[]
-  ): Promise<string | null> {
-    await this.expandBrandList();
-
-    const brandsSection =
-      this.refinements.locator(
-        '#brandsRefinements'
-      );
-
-    const searchArea =
-      await brandsSection
-        .isVisible({ timeout: 1500 })
-        .catch(() => false)
-        ? brandsSection
-        : this.refinements;
-
-    const links =
-      searchArea.locator(
-        'a[aria-label*="Apply the filter"]'
-      );
-
-    const count =
-      await links.count();
-
-    for (let i = 0; i < count; i++) {
-      const link =
-        links.nth(i);
-
-      const text =
-        (
-          await link
-            .innerText()
-            .catch(() => '')
-        ).trim();
-
-      const ariaLabel =
-        (
-          await link
-            .getAttribute(
-              'aria-label'
-            )
-        ) ?? '';
-
-      const brand =
-        this.extractBrandName(
-          text,
-          ariaLabel
-        );
-
-      if (!brand) {
-        continue;
-      }
-
-      if (
-        alreadySelected.some(
-          selected =>
-            selected.toLowerCase() ===
-            brand.toLowerCase()
-        )
-      ) {
-        continue;
-      }
-
-      // Avoid accidentally picking non-brand filters
-      if (
-        this.looksLikeNonBrandFilter(
-          brand
-        )
-      ) {
-        continue;
-      }
-
-      const visible =
-        await link
-          .isVisible()
-          .catch(() => false);
-
-      if (!visible) {
-        continue;
-      }
-
-      await link
-        .scrollIntoViewIfNeeded();
-
-      await link.click();
-
-      await this.page.waitForLoadState(
-        'domcontentloaded'
-      );
-
-      await this.waitForResults();
-
-      return brand;
-    }
-
-    return null;
-  }
-
-  /**
-   * Flexible locator for Sony, Samsung, etc.
+   * Flexible locator for Sony / Samsung.
+   *
+   * Amazon sometimes changes the
+   * HTML/accessibility text of filters.
    */
   private getBrandLocator(
     brand: string
   ): Locator {
-    const escaped =
+    const escapedBrand =
       escapeRegExp(brand);
 
     const brandsSection =
@@ -374,93 +307,66 @@ export class SearchResultsPage {
         '#brandsRefinements'
       );
 
-    return brandsSection
-      .getByRole(
+    // Strategy 1:
+    // aria-label="Apply the filter Sony"
+    const byBrandAria =
+      brandsSection.getByRole(
         'link',
         {
           name: new RegExp(
-            `Apply the filter.*${escaped}`,
+            `Apply the filter.*${escapedBrand}`,
             'i'
           ),
         }
-      )
-      .or(
-        brandsSection
-          .locator('a')
-          .filter({
-            hasText: new RegExp(
-              `^\\s*${escaped}\\s*$`,
-              'i'
-            ),
-          })
-      )
-      .or(
-        this.refinements
-          .getByRole(
-            'link',
-            {
-              name: new RegExp(
-                `Apply the filter.*${escaped}`,
-                'i'
-              ),
-            }
-          )
-      )
-      .or(
-        this.refinements
-          .locator('a')
-          .filter({
-            hasText: new RegExp(
-              `^\\s*${escaped}\\s*$`,
-              'i'
-            ),
-          })
-      )
+      );
+
+    // Strategy 2:
+    // Visible text "Sony"
+    const byBrandText =
+      brandsSection
+        .locator('a')
+        .filter({
+          hasText: new RegExp(
+            `^\\s*${escapedBrand}\\s*$`,
+            'i'
+          ),
+        });
+
+    // Strategy 3:
+    // Search entire refinements area
+    const byRefinementAria =
+      this.refinements.getByRole(
+        'link',
+        {
+          name: new RegExp(
+            `Apply the filter.*${escapedBrand}`,
+            'i'
+          ),
+        }
+      );
+
+    // Strategy 4:
+    // Generic Amazon anchor text
+    const byRefinementText =
+      this.refinements
+        .locator('a')
+        .filter({
+          hasText: new RegExp(
+            `^\\s*${escapedBrand}\\s*$`,
+            'i'
+          ),
+        });
+
+    return byBrandAria
+      .or(byBrandText)
+      .or(byRefinementAria)
+      .or(byRefinementText)
       .first();
   }
 
   /**
-   * Extract a clean brand name.
-   */
-  private extractBrandName(
-    visibleText: string,
-    ariaLabel: string
-  ): string {
-    if (visibleText) {
-      return visibleText
-        .replace(/\(\d+[,\d]*\)/g, '')
-        .trim();
-    }
-
-    if (ariaLabel) {
-      return ariaLabel
-        .replace(
-          /^Apply the filter\s+/i,
-          ''
-        )
-        .replace(
-          /\s+to narrow results.*$/i,
-          ''
-        )
-        .trim();
-    }
-
-    return '';
-  }
-
-  /**
-   * Helps avoid picking size, price,
-   * rating, delivery, etc.
-   */
-  private looksLikeNonBrandFilter(
-    value: string
-  ): boolean {
-    return /inch|inches|₹|price|rating|stars|delivery|discount|resolution|screen|smart tv|customer review/i
-      .test(value);
-  }
-
-  /**
-   * Return first product link.
+   * Get first valid product link
+   * from filtered Amazon results.
    */
   firstProductLink(): Locator {
     return this.resultCards
@@ -475,6 +381,12 @@ export class SearchResultsPage {
 
   /**
    * Open first filtered product.
+   *
+   * Amazon may open:
+   * - same tab
+   * - new tab
+   *
+   * Both cases are handled.
    */
   async openFirstProduct(): Promise<Page> {
     await this.waitForResults();
@@ -521,7 +433,8 @@ export class SearchResultsPage {
 }
 
 /**
- * Escape special RegExp characters.
+ * Escape special characters before
+ * using brand name inside RegExp.
  */
 function escapeRegExp(
   value: string
