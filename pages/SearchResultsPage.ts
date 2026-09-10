@@ -8,22 +8,18 @@ export class SearchResultsPage {
   constructor(page: Page) {
     this.page = page;
 
-    this.refinements =
-      page.locator('#s-refinements');
+    this.refinements = page.locator('#s-refinements');
 
-    this.resultCards =
-      page.locator(
-        '[data-component-type="s-search-result"]'
-      );
+    this.resultCards = page.locator(
+      '[data-component-type="s-search-result"]'
+    );
   }
 
   async waitForResults(): Promise<void> {
-    await this.resultCards
-      .first()
-      .waitFor({
-        state: 'visible',
-        timeout: 30_000,
-      });
+    await this.resultCards.first().waitFor({
+      state: 'visible',
+      timeout: 30_000,
+    });
   }
 
   async applyDisplaySize55Inch(): Promise<void> {
@@ -32,37 +28,24 @@ export class SearchResultsPage {
       timeout: 20_000,
     });
 
-    const exact55 =
-      this.refinements.getByRole(
-        'link',
-        {
-          name: /^55[″"”']$/,
-        }
-      );
+    const exact55 = this.refinements.getByRole('link', {
+      name: /^55[″"”']$/,
+    });
 
-    const sizeRangeCheckbox =
-      this.refinements.getByRole(
-        'checkbox',
-        {
-          name: /53\.0\s*to\s*61\.9\s*in/i,
-        }
-      );
+    const sizeRangeCheckbox = this.refinements.getByRole(
+      'checkbox',
+      {
+        name: /53\.0\s*to\s*61\.9\s*in/i,
+      }
+    );
 
-    const sizeRangeLink =
-      this.refinements.getByRole(
-        'link',
-        {
-          name: /53\.0\s*to\s*61\.9\s*in/i,
-        }
-      );
+    const sizeRangeLink = this.refinements.getByRole('link', {
+      name: /53\.0\s*to\s*61\.9\s*in/i,
+    });
 
-    const inchesLabel =
-      this.refinements.getByRole(
-        'link',
-        {
-          name: /55\s*(inch|inches)/i,
-        }
-      );
+    const inchesLabel = this.refinements.getByRole('link', {
+      name: /55\s*(inch|inches)/i,
+    });
 
     if (
       await exact55
@@ -71,9 +54,7 @@ export class SearchResultsPage {
     ) {
       await exact55.click();
 
-      console.log(
-        'Exact 55-inch filter selected'
-      );
+      console.log('Exact 55-inch filter selected');
     }
 
     else if (
@@ -106,13 +87,9 @@ export class SearchResultsPage {
         .isVisible({ timeout: 2000 })
         .catch(() => false)
     ) {
-      await inchesLabel
-        .first()
-        .click();
+      await inchesLabel.first().click();
 
-      console.log(
-        '55-inch filter selected'
-      );
+      console.log('55-inch filter selected');
     }
 
     else {
@@ -133,18 +110,12 @@ export class SearchResultsPage {
   }
 
   async applyBrands(): Promise<string[]> {
-    const requiredBrands = [
-      'Sony',
-      'Samsung',
-    ];
+    const requiredBrands = ['Sony', 'Samsung'];
 
     const selectedBrands: string[] = [];
 
     for (const brand of requiredBrands) {
-      const selected =
-        await this.selectBrandCheckbox(
-          brand
-        );
+      const selected = await this.selectBrand(brand);
 
       if (!selected) {
         throw new Error(
@@ -162,170 +133,207 @@ export class SearchResultsPage {
     return selectedBrands;
   }
 
-  private async selectBrandCheckbox(
+  private async selectBrand(
     brand: string
   ): Promise<boolean> {
-    await this.refinements.waitFor({
-      state: 'visible',
-      timeout: 20_000,
-    });
-
-    await this.expandBrandList();
-
-    const escaped =
-      escapeRegExp(brand);
 
     console.log(
       `Looking for ${brand} brand filter...`
     );
 
-    // METHOD 1:
-    // Find visible brand text, then click its parent link.
-    const brandText =
-      this.refinements.getByText(
-        new RegExp(
-          `^\\s*${escaped}\\s*$`,
-          'i'
-        )
-      );
+    // Open Amazon's complete brand list
+    await this.expandBrandList();
 
-    if (
-      await brandText
-        .first()
-        .isVisible({ timeout: 5000 })
-        .catch(() => false)
-    ) {
-      const text =
-        brandText.first();
+    await this.page.waitForTimeout(1000);
+
+    /*
+      IMPORTANT:
+      Search the WHOLE PAGE here.
+
+      Amazon's "See more" brand list may be rendered
+      outside #s-refinements.
+    */
+
+    // METHOD 1 - exact visible brand text
+    const exactBrandText = this.page.getByText(
+      new RegExp(
+        `^\\s*${escapeRegExp(brand)}\\s*$`,
+        'i'
+      )
+    );
+
+    const textCount = await exactBrandText.count();
+
+    console.log(
+      `${brand} exact text matches found: ${textCount}`
+    );
+
+    for (let i = 0; i < textCount; i++) {
+      const text = exactBrandText.nth(i);
+
+      if (
+        !(await text
+          .isVisible()
+          .catch(() => false))
+      ) {
+        continue;
+      }
+
+      console.log(
+        `Visible ${brand} text found`
+      );
 
       await text.scrollIntoViewIfNeeded();
 
-      console.log(
-        `${brand} text found`
+      // Brand may be inside a label
+      const label = text.locator(
+        'xpath=ancestor::label[1]'
       );
 
-      const parentLink =
-        text.locator(
-          'xpath=ancestor::a[1]'
-        );
-
       if (
-        await parentLink
-          .isVisible({ timeout: 2000 })
+        await label
+          .isVisible({ timeout: 1500 })
           .catch(() => false)
       ) {
-        await parentLink.click();
-
-        await this.page.waitForLoadState(
-          'domcontentloaded'
-        );
-
-        await this.waitForResults();
+        await label.click();
 
         console.log(
-          `${brand} brand selected`
+          `${brand} selected using label`
         );
+
+        await this.waitAfterBrandSelection();
 
         return true;
       }
 
-      const parentLabel =
-        text.locator(
-          'xpath=ancestor::label[1]'
-        );
+      // Brand may be inside a link
+      const link = text.locator(
+        'xpath=ancestor::a[1]'
+      );
 
       if (
-        await parentLabel
-          .isVisible({ timeout: 2000 })
+        await link
+          .isVisible({ timeout: 1500 })
           .catch(() => false)
       ) {
-        await parentLabel.click();
-
-        await this.page.waitForLoadState(
-          'domcontentloaded'
-        );
-
-        await this.waitForResults();
+        await link.click();
 
         console.log(
-          `${brand} brand selected`
+          `${brand} selected using link`
         );
+
+        await this.waitAfterBrandSelection();
 
         return true;
       }
 
-      await text.click();
+      // If text itself is clickable
+      try {
+        await text.click();
 
-      await this.page.waitForLoadState(
-        'domcontentloaded'
-      );
+        console.log(
+          `${brand} selected using visible text`
+        );
 
-      await this.waitForResults();
+        await this.waitAfterBrandSelection();
 
-      console.log(
-        `${brand} brand selected`
-      );
-
-      return true;
+        return true;
+      } catch {
+        // continue to fallback
+      }
     }
 
-    // METHOD 2:
-    // Accessible checkbox
-    const checkbox =
-      this.refinements.getByRole(
-        'checkbox',
-        {
-          name: new RegExp(
-            escaped,
-            'i'
-          ),
-        }
-      );
+    /*
+      METHOD 2 - checkbox anywhere on page
+    */
+
+    const brandCheckbox = this.page.getByRole(
+      'checkbox',
+      {
+        name: new RegExp(
+          escapeRegExp(brand),
+          'i'
+        ),
+      }
+    );
 
     if (
-      await checkbox
+      await brandCheckbox
         .first()
         .isVisible({ timeout: 3000 })
         .catch(() => false)
     ) {
-      const box =
-        checkbox.first();
+      const checkbox = brandCheckbox.first();
 
-      await box.scrollIntoViewIfNeeded();
+      await checkbox.scrollIntoViewIfNeeded();
 
       if (
-        !(await box
+        !(await checkbox
           .isChecked()
           .catch(() => false))
       ) {
-        await box.check();
+        await checkbox.check();
       }
 
-      await this.page.waitForLoadState(
-        'domcontentloaded'
-      );
-
-      await this.waitForResults();
-
       console.log(
-        `${brand} brand selected using checkbox`
+        `${brand} selected using checkbox`
       );
+
+      await this.waitAfterBrandSelection();
 
       return true;
     }
 
-    // METHOD 3:
-    // Amazon filter link fallback
-    const brandLink =
-      this.refinements.getByRole(
-        'link',
-        {
-          name: new RegExp(
-            `Apply the filter.*${escaped}`,
-            'i'
-          ),
-        }
+    /*
+      METHOD 3 - label containing Sony/Samsung
+      anywhere on page
+    */
+
+    const brandLabel = this.page
+      .locator('label')
+      .filter({
+        hasText: new RegExp(
+          `\\b${escapeRegExp(brand)}\\b`,
+          'i'
+        ),
+      });
+
+    if (
+      await brandLabel
+        .first()
+        .isVisible({ timeout: 3000 })
+        .catch(() => false)
+    ) {
+      await brandLabel
+        .first()
+        .scrollIntoViewIfNeeded();
+
+      await brandLabel
+        .first()
+        .click();
+
+      console.log(
+        `${brand} selected using page label`
       );
+
+      await this.waitAfterBrandSelection();
+
+      return true;
+    }
+
+    /*
+      METHOD 4 - link containing brand
+      anywhere on page
+    */
+
+    const brandLink = this.page
+      .locator('a')
+      .filter({
+        hasText: new RegExp(
+          `\\b${escapeRegExp(brand)}\\b`,
+          'i'
+        ),
+      });
 
     if (
       await brandLink
@@ -341,15 +349,11 @@ export class SearchResultsPage {
         .first()
         .click();
 
-      await this.page.waitForLoadState(
-        'domcontentloaded'
-      );
-
-      await this.waitForResults();
-
       console.log(
-        `${brand} brand selected using filter link`
+        `${brand} selected using page link`
       );
+
+      await this.waitAfterBrandSelection();
 
       return true;
     }
@@ -362,6 +366,17 @@ export class SearchResultsPage {
   }
 
   private async expandBrandList(): Promise<void> {
+    console.log('Opening Brands section...');
+
+    await this.refinements.waitFor({
+      state: 'visible',
+      timeout: 20_000,
+    });
+
+    /*
+      Find the Brands section
+    */
+
     const brandsSection =
       this.refinements.locator(
         '#brandsRefinements'
@@ -369,63 +384,128 @@ export class SearchResultsPage {
 
     if (
       await brandsSection
-        .isVisible({ timeout: 2000 })
+        .isVisible({ timeout: 3000 })
         .catch(() => false)
     ) {
       await brandsSection.scrollIntoViewIfNeeded();
 
-      const seeMore =
-        brandsSection.getByText(
-          /see more/i
-        );
+      console.log(
+        'Brands section found'
+      );
+
+      /*
+        Click "See more" specifically
+        inside the Brands section.
+      */
+
+      const seeMore = brandsSection
+        .getByText(/see more/i)
+        .first();
 
       if (
         await seeMore
-          .first()
-          .isVisible({ timeout: 1500 })
+          .isVisible({ timeout: 2500 })
           .catch(() => false)
       ) {
-        await seeMore
-          .first()
-          .click()
-          .catch(() => {});
+        console.log(
+          'See more found under Brands'
+        );
+
+        await seeMore.scrollIntoViewIfNeeded();
+
+        await seeMore.click();
+
+        await this.page.waitForTimeout(1200);
+
+        console.log(
+          'Brands list expanded'
+        );
+
+        return;
       }
+
+      console.log(
+        'See more not visible - checking if brand list is already expanded'
+      );
 
       return;
     }
 
-    const brandsHeading =
-      this.refinements.getByText(
-        /^Brands$/i
-      );
+    /*
+      Fallback if Amazon changes brandsRefinements ID
+    */
+
+    const brandsHeading = this.page.getByText(
+      /^Brands$/i
+    );
 
     if (
       await brandsHeading
         .first()
-        .isVisible({ timeout: 2000 })
+        .isVisible({ timeout: 3000 })
         .catch(() => false)
     ) {
       await brandsHeading
         .first()
         .scrollIntoViewIfNeeded();
-    }
 
-    const seeMore =
-      this.refinements.getByText(
-        /see more/i
+      console.log(
+        'Brands heading found'
       );
 
-    if (
-      await seeMore
+      /*
+        Find a nearby See more
+      */
+
+      const parent = brandsHeading
         .first()
-        .isVisible({ timeout: 1500 })
-        .catch(() => false)
-    ) {
-      await seeMore
-        .first()
-        .click()
-        .catch(() => {});
+        .locator(
+          'xpath=ancestor::div[contains(@class,"a-section")][1]'
+        );
+
+      const seeMore = parent
+        .getByText(/see more/i)
+        .first();
+
+      if (
+        await seeMore
+          .isVisible({ timeout: 2500 })
+          .catch(() => false)
+      ) {
+        await seeMore.click();
+
+        await this.page.waitForTimeout(1200);
+
+        console.log(
+          'Brands dropdown opened'
+        );
+
+        return;
+      }
     }
+
+    console.log(
+      'Brands list could not be expanded using normal locator'
+    );
+  }
+
+  private async waitAfterBrandSelection(): Promise<void> {
+    /*
+      Amazon may close the brand popup
+      and refresh the search result page.
+    */
+
+    await this.page.waitForTimeout(1200);
+
+    await this.page.waitForLoadState(
+      'domcontentloaded'
+    ).catch(() => {});
+
+    await this.waitForResults();
+
+    console.log(
+      'Search results refreshed after brand selection'
+    );
   }
 
   firstProductLink(): Locator {
