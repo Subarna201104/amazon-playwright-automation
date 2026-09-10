@@ -13,7 +13,7 @@ The automation performs the following steps:
 1. Open Amazon.in.
 2. Search for `Television`.
 3. Apply the **55-inch** display-size filter.
-4. Select the following TV brands:
+4. Select two TV brands:
    - Samsung
    - Sony
 5. Open the first product from the filtered search results.
@@ -91,11 +91,18 @@ Before running the project, make sure the required software listed below is inst
 
 This project is configured to run using **Google Chrome**.
 
-Download and install Google Chrome from the official Google Chrome website.
-
-After installation, open Chrome once to confirm that it works properly.
-
 Google Chrome is required because the Playwright configuration uses the Chrome browser channel.
+
+### Steps
+
+1. Open a web browser.
+2. Go to the official Google Chrome website.
+3. Download Google Chrome for Windows.
+4. Open the downloaded installer.
+5. Follow the installation instructions.
+6. Complete the installation.
+7. Open Google Chrome once after installation.
+8. Confirm that Google Chrome opens correctly.
 
 ---
 
@@ -105,8 +112,10 @@ This project requires **Node.js** because Playwright with TypeScript runs in the
 
 Installing Node.js also provides:
 
-- npm
-- npx
+```text
+npm
+npx
+```
 
 `npm` is used to install the project dependencies.
 
@@ -118,49 +127,64 @@ Download the **Node.js LTS version** from the official Node.js website:
 https://nodejs.org/
 ```
 
-During installation, keep the default installation options selected.
+### Steps
 
-After installation, close and reopen Command Prompt or PowerShell.
+1. Open a web browser.
+2. Go to the official Node.js website.
+3. Download the **LTS version** of Node.js for Windows.
+4. Open the downloaded installer.
+5. Follow the installation instructions using the default options.
+6. Complete the installation.
+7. Close any Command Prompt or PowerShell window that was already open.
+8. Open a new Command Prompt or PowerShell window.
 
 ---
 
 # 3. Verify Node.js and npm Installation
 
-Open Windows Command Prompt.
+After installing Node.js, verify that Node.js and npm are available.
 
-Press:
+### Steps
+
+1. Press:
 
 ```text
 Windows Key + R
 ```
 
-Type:
+2. Type:
 
 ```text
 cmd
 ```
 
-and press Enter.
-
-Check the Node.js version:
+3. Press Enter.
+4. Windows Command Prompt will open.
+5. Type:
 
 ```cmd
 node -v
 ```
 
-Example output:
+6. Press Enter.
+7. Check whether a Node.js version number is displayed.
+
+Example:
 
 ```text
 v22.x.x
 ```
 
-Check the npm version:
+8. Now type:
 
 ```cmd
 npm -v
 ```
 
-Example output:
+9. Press Enter.
+10. Check whether an npm version number is displayed.
+
+Example:
 
 ```text
 10.x.x
@@ -172,45 +196,77 @@ If both commands display version numbers, Node.js and npm are installed correctl
 
 # 4. Install Git
 
-Git is required to clone/download the project from GitHub.
+Git is required to clone the project from GitHub.
 
-Download and install Git from the official Git website:
+Download Git from the official Git website:
 
 ```text
 https://git-scm.com/
 ```
 
-During installation, the default installation options can be used.
+### Steps
 
-After installation, close and reopen Command Prompt or PowerShell.
+1. Open a web browser.
+2. Go to the official Git website.
+3. Download Git for Windows.
+4. Open the downloaded installer.
+5. Follow the installation instructions using the default options.
+6. Complete the installation.
+7. Close Command Prompt or PowerShell if it is already open.
+8. Open a new Command Prompt or PowerShell window.
 
 ---
 
 # 5. Verify Git Installation
 
-Open Command Prompt and run:
+After installing Git, verify that it is available.
+
+### Steps
+
+1. Open Windows Command Prompt.
+2. Type:
 
 ```cmd
 git --version
 ```
 
-Example output:
+3. Press Enter.
+4. Check whether a Git version number is displayed.
+
+Example:
 
 ```text
 git version 2.x.x
 ```
 
-If a version number is displayed, Git is installed correctly.
+5. If the version number is displayed, Git is installed successfully.
 
 ---
 
 # 6. Visual Studio Code - Optional
 
-Visual Studio Code is **not required** to execute the automation.
+Visual Studio Code is **not required** to run the automation.
 
-It is only required if the user wants to view or edit the project source code using an editor.
+It is only useful if the user wants to:
 
-The complete project can be cloned, installed, and executed directly using Windows Command Prompt or PowerShell.
+- View the project files
+- Read the TypeScript code
+- Edit the project
+- Use the integrated terminal
+
+The complete project can be executed directly using Windows Command Prompt or PowerShell.
+
+### Steps to Install VS Code - Optional
+
+1. Open a web browser.
+2. Go to the official Visual Studio Code website.
+3. Download VS Code for Windows.
+4. Open the downloaded installer.
+5. Follow the installation instructions.
+6. Complete the installation.
+7. Open VS Code if you want to view or edit the project.
+
+If you only want to execute the automation, this step can be skipped.
 
 ---
 
@@ -218,51 +274,105 @@ The complete project can be cloned, installed, and executed directly using Windo
 
 The project can be cloned into any folder on the Windows computer.
 
-For example, to use the Desktop, open Command Prompt and run:
+For this example, the project will be saved on the Windows Desktop.
+
+### Steps
+
+1. Open Windows Command Prompt.
+2. Type the following command:
 
 ```cmd
 cd %USERPROFILE%\Desktop
 ```
 
+3. Press Enter.
+4. Command Prompt will now point to the Desktop.
+5. The terminal should display a location similar to:
+
+```text
+C:\Users\YourName\Desktop>
+```
+
+6. Keep this Command Prompt window open.
+7. Continue to the repository cloning step.
+
 ---
 
 # 8. Clone the GitHub Repository
 
-Run:
+The project now needs to be downloaded from GitHub.
+
+Repository:
+
+```text
+https://github.com/Subarna201104/amazon-playwright-automation
+```
+
+### Steps
+
+1. Keep Windows Command Prompt open.
+2. Make sure Command Prompt is pointing to the location where you want to save the project.
+3. If you followed the previous step, Command Prompt should currently be pointing to the Desktop.
+4. Copy the following command:
 
 ```cmd
 git clone https://github.com/Subarna201104/amazon-playwright-automation.git
 ```
 
-This downloads the complete project from GitHub.
+5. Paste the command into Command Prompt.
+6. Press Enter.
+7. Git will begin downloading the project.
+8. Wait until Git finishes cloning the repository.
+9. You may see messages similar to:
 
-After cloning, a folder named:
+```text
+Cloning into 'amazon-playwright-automation'...
+Receiving objects...
+Resolving deltas...
+```
+
+10. After completion, a folder named:
 
 ```text
 amazon-playwright-automation
 ```
 
-will be created.
+will be created automatically.
+
+11. Do not manually create the project folder.
+12. Continue to the next step to enter the project folder.
 
 ---
 
 # 9. Enter the Project Folder
 
-Run:
+After cloning the repository, Command Prompt must be moved inside the project folder.
+
+### Steps
+
+1. Keep the same Command Prompt window open.
+2. Type:
 
 ```cmd
 cd amazon-playwright-automation
 ```
 
-The terminal must be inside the project folder before running npm or Playwright commands.
+3. Press Enter.
+4. Command Prompt should now display a location similar to:
 
-To verify the project files, run:
+```text
+C:\Users\YourName\Desktop\amazon-playwright-automation>
+```
+
+5. This confirms that Command Prompt is inside the project folder.
+6. To verify the project files, type:
 
 ```cmd
 dir
 ```
 
-You should see files and folders such as:
+7. Press Enter.
+8. You should see files and folders such as:
 
 ```text
 pages
@@ -276,6 +386,8 @@ tsconfig.json
 README.md
 ```
 
+If these files are displayed, you are in the correct project folder.
+
 ---
 
 # 10. Install Project Dependencies
@@ -287,49 +399,51 @@ package.json
 package-lock.json
 ```
 
-## Windows Command Prompt
+The dependencies must be installed before running the automation.
 
-Run:
+### Windows Command Prompt - Steps
+
+1. Make sure Command Prompt is inside the `amazon-playwright-automation` folder.
+2. Type:
 
 ```cmd
 npm install
 ```
 
-## Windows PowerShell
+3. Press Enter.
+4. Wait for npm to install all required project dependencies.
+5. Do not close Command Prompt while the installation is running.
+6. After installation, a `node_modules` folder will be created automatically.
+7. Wait until the command completely finishes before continuing.
 
-Run:
+### Windows PowerShell
+
+If PowerShell blocks the normal npm command, use:
 
 ```powershell
 npm.cmd install
 ```
 
-This installs all required project packages into:
-
-```text
-node_modules
-```
-
-The `node_modules` folder does not need to be downloaded from GitHub because it can be generated using `npm install`.
+The `node_modules` folder does not need to be stored in GitHub because it can be recreated using the project dependencies.
 
 ---
 
 # 11. Verify Playwright Installation
 
-After installing the dependencies, verify Playwright.
+After installing the project dependencies, verify that Playwright is available.
 
-## Windows Command Prompt
+### Windows Command Prompt - Steps
+
+1. Keep Command Prompt open.
+2. Make sure it is still inside the project folder.
+3. Type:
 
 ```cmd
 npx playwright --version
 ```
 
-## Windows PowerShell
-
-```powershell
-npx.cmd playwright --version
-```
-
-A Playwright version number should be displayed.
+4. Press Enter.
+5. Check whether a Playwright version number is displayed.
 
 Example:
 
@@ -337,7 +451,15 @@ Example:
 Version 1.x.x
 ```
 
-This confirms that Playwright is available in the project.
+6. If a version number appears, Playwright is ready.
+
+### Windows PowerShell
+
+Use:
+
+```powershell
+npx.cmd playwright --version
+```
 
 ---
 
@@ -345,11 +467,18 @@ This confirms that Playwright is available in the project.
 
 This project is configured to use **Google Chrome**.
 
-The Playwright configuration contains the Chrome browser channel.
+The Playwright configuration uses the Chrome browser channel.
 
 Therefore, Google Chrome must be installed on the Windows computer before running the automation.
 
-No separate browser installation command is required for this project when Google Chrome is already installed.
+### Steps
+
+1. Confirm that Google Chrome has already been installed.
+2. Open Google Chrome manually once.
+3. Check that Chrome opens normally.
+4. Close Chrome.
+5. Return to Command Prompt or PowerShell.
+6. Continue to the automation execution step.
 
 ---
 
@@ -361,20 +490,30 @@ Make sure the terminal is inside:
 amazon-playwright-automation
 ```
 
-## Windows PowerShell
+### Windows Command Prompt - Steps
+
+1. Open Command Prompt if it is not already open.
+2. Navigate to the project folder if required.
+3. Make sure the terminal is inside `amazon-playwright-automation`.
+4. Type:
+
+```cmd
+npx playwright test --headed
+```
+
+5. Press Enter.
+6. Wait for Google Chrome to open.
+7. Allow the automation to run.
+8. Do not manually interact with the browser while the automation is running.
+9. Wait until the complete test execution finishes.
+10. Check Command Prompt for the final test result.
+
+### Windows PowerShell
 
 Run:
 
 ```powershell
 npx.cmd playwright test --headed
-```
-
-## Windows Command Prompt
-
-Run:
-
-```cmd
-npx playwright test --headed
 ```
 
 The `--headed` option allows the browser to remain visible while the automation is running.
@@ -454,23 +593,28 @@ The exact terminal output and product information may vary because Amazon.in con
 
 After the automation finishes, the Playwright HTML report can be opened.
 
-## Windows PowerShell
+### Windows Command Prompt - Steps
+
+1. Wait until the Playwright test has completely finished.
+2. Return to Command Prompt.
+3. Make sure Command Prompt is still inside the `amazon-playwright-automation` folder.
+4. Type:
+
+```cmd
+npx playwright show-report
+```
+
+5. Press Enter.
+6. Wait for the Playwright HTML report to open in the browser.
+7. The report will display the test execution details.
+
+### Windows PowerShell
 
 Run:
 
 ```powershell
 npx.cmd playwright show-report
 ```
-
-## Windows Command Prompt
-
-Run:
-
-```cmd
-npx playwright show-report
-```
-
-This opens the Playwright HTML report in the browser.
 
 ---
 
@@ -531,11 +675,20 @@ The captured product information is also written to:
 logs/product-details.log
 ```
 
-To open the log file directly using Windows Command Prompt or PowerShell:
+### Steps to Open the Log File
+
+1. Wait until the automation has finished.
+2. Return to Command Prompt.
+3. Make sure Command Prompt is inside the project folder.
+4. Type:
 
 ```cmd
 notepad logs\product-details.log
 ```
+
+5. Press Enter.
+6. Windows Notepad will open.
+7. The captured Amazon product information will be displayed.
 
 The file can also be opened manually from:
 
@@ -579,43 +732,31 @@ The actual captured information depends on the product available on Amazon.in du
 
 If the repository has already been cloned, it does **not** need to be cloned again.
 
-Open Command Prompt or PowerShell and navigate to the project folder.
+Node.js, Git and Google Chrome also do not need to be installed again if they are already available on the computer.
 
-Example:
+### Steps
 
-```cmd
-cd C:\Users\YourName\Desktop\amazon-playwright-automation
-```
-
-To download the latest project changes from GitHub:
+1. Open Windows Command Prompt.
+2. Type:
 
 ```cmd
-git pull
+cd %USERPROFILE%\Desktop\amazon-playwright-automation
 ```
 
-Install dependencies if required:
-
-## Windows Command Prompt
-
-```cmd
-npm install
-```
-
-## Windows PowerShell
-
-```powershell
-npm.cmd install
-```
-
-Then run the automation again.
-
-## Windows Command Prompt
+3. Press Enter.
+4. Make sure Command Prompt is now inside the project folder.
+5. Run:
 
 ```cmd
 npx playwright test --headed
 ```
 
-## Windows PowerShell
+6. Press Enter.
+7. Wait for the automation to complete.
+
+### Windows PowerShell
+
+If using PowerShell:
 
 ```powershell
 npx.cmd playwright test --headed
@@ -623,7 +764,48 @@ npx.cmd playwright test --headed
 
 ---
 
-# 21. Clean Dependency Installation
+# 21. Update an Existing Project
+
+If the repository was cloned earlier and the latest changes need to be downloaded from GitHub, use `git pull`.
+
+### Steps
+
+1. Open Windows Command Prompt.
+2. Navigate to the project folder:
+
+```cmd
+cd %USERPROFILE%\Desktop\amazon-playwright-automation
+```
+
+3. Press Enter.
+4. Type:
+
+```cmd
+git pull
+```
+
+5. Press Enter.
+6. Wait for Git to download the latest changes.
+7. Run:
+
+```cmd
+npm install
+```
+
+8. Press Enter.
+9. Wait for the dependencies to finish installing/updating.
+10. Run:
+
+```cmd
+npx playwright test --headed
+```
+
+11. Press Enter.
+12. Wait for the automation to complete.
+
+---
+
+# 22. Clean Dependency Installation
 
 Because the project contains:
 
@@ -631,15 +813,15 @@ Because the project contains:
 package-lock.json
 ```
 
-dependencies can also be installed using:
+dependencies can also be installed using `npm ci`.
 
-## Windows Command Prompt
+### Windows Command Prompt
 
 ```cmd
 npm ci
 ```
 
-## Windows PowerShell
+### Windows PowerShell
 
 ```powershell
 npm.cmd ci
@@ -651,25 +833,33 @@ This is useful when setting up the project on another Windows computer.
 
 ---
 
-# 22. Run in Debug Mode
+# 23. Run in Debug Mode
 
 If the automation needs to be inspected step by step, Playwright Debug Mode can be used.
 
-## Windows PowerShell
+### Windows Command Prompt - Steps
 
-```powershell
-npx.cmd playwright test --headed --debug
-```
-
-## Windows Command Prompt
+1. Open Command Prompt.
+2. Navigate to the project folder.
+3. Type:
 
 ```cmd
 npx playwright test --headed --debug
 ```
 
-Debug mode opens the Playwright Inspector.
+4. Press Enter.
+5. Playwright Inspector will open.
+6. Use the Inspector to observe the automation step by step.
 
-The Inspector can be used to:
+### Windows PowerShell
+
+Run:
+
+```powershell
+npx.cmd playwright test --headed --debug
+```
+
+The Playwright Inspector can be used to:
 
 - Pause the automation
 - Continue the test step by step
@@ -679,7 +869,7 @@ The Inspector can be used to:
 
 ---
 
-# 23. Open a Playwright Trace After Failure
+# 24. Open a Playwright Trace After Failure
 
 If the test fails and Playwright generates a trace file, the exact trace location is displayed in the terminal.
 
@@ -689,27 +879,36 @@ Example:
 test-results\...\trace.zip
 ```
 
-## Windows PowerShell
+### Steps
 
-```powershell
-npx.cmd playwright show-trace path-to-trace.zip
+1. Wait for the failed test to finish.
+2. Look at the terminal output.
+3. Find the path ending with:
+
+```text
+trace.zip
 ```
 
-## Windows Command Prompt
+4. Copy the displayed trace path.
+5. Run:
 
 ```cmd
 npx playwright show-trace path-to-trace.zip
 ```
 
-Replace:
+6. Replace `path-to-trace.zip` with the actual path shown in the terminal.
+7. Press Enter.
+8. The Playwright Trace Viewer will open.
 
-```text
-path-to-trace.zip
+### Windows PowerShell
+
+Use:
+
+```powershell
+npx.cmd playwright show-trace path-to-trace.zip
 ```
 
-with the actual trace path displayed after the failed test.
-
-The Playwright Trace Viewer helps inspect:
+The Trace Viewer helps inspect:
 
 - Browser actions
 - Test steps
@@ -720,7 +919,7 @@ The Playwright Trace Viewer helps inspect:
 
 ---
 
-# 24. Important Project Files
+# 25. Important Project Files
 
 ## Main Test
 
@@ -729,8 +928,6 @@ tests/amazon-tv-search.spec.ts
 ```
 
 This file contains the main automation scenario and validations.
-
----
 
 ## Home Page Object
 
@@ -743,8 +940,6 @@ Handles:
 - Opening Amazon.in
 - Dismissing optional popups/interstitials
 - Searching for Television
-
----
 
 ## Search Results Page Object
 
@@ -759,8 +954,6 @@ Handles:
 - Selecting Samsung
 - Selecting Sony
 - Opening the first filtered product
-
----
 
 ## Product Page Object
 
@@ -779,8 +972,6 @@ Handles extraction of:
 - Availability
 - ASIN
 
----
-
 ## Product Logger
 
 ```text
@@ -792,8 +983,6 @@ Writes the captured product information to:
 ```text
 logs/product-details.log
 ```
-
----
 
 ## Playwright Configuration
 
@@ -814,7 +1003,7 @@ Contains configuration such as:
 
 ---
 
-# 25. Troubleshooting
+# 26. Troubleshooting
 
 ## Error: Node.js Is Not Recognized
 
@@ -824,33 +1013,41 @@ Example:
 'node' is not recognized as an internal or external command
 ```
 
-Install Node.js.
+### Solution
 
-After installation, close and reopen Command Prompt or PowerShell.
-
-Verify:
+1. Check whether Node.js has been installed.
+2. If not, install Node.js.
+3. Close Command Prompt.
+4. Open Command Prompt again.
+5. Run:
 
 ```cmd
 node -v
 ```
+
+6. Confirm that the Node.js version appears.
 
 ---
 
 ## Error: npm Is Not Recognized
 
-Verify that Node.js is installed:
+### Solution
+
+1. Check Node.js:
 
 ```cmd
 node -v
 ```
 
-Then check npm:
+2. Press Enter.
+3. Check npm:
 
 ```cmd
 npm -v
 ```
 
-For Windows PowerShell:
+4. Press Enter.
+5. If using Windows PowerShell, try:
 
 ```powershell
 npm.cmd -v
@@ -866,30 +1063,46 @@ Example:
 'git' is not recognized as an internal or external command
 ```
 
-Install Git and reopen the terminal.
+### Solution
 
-Verify:
+1. Install Git for Windows.
+2. Close Command Prompt.
+3. Open Command Prompt again.
+4. Run:
 
 ```cmd
 git --version
 ```
 
+5. Confirm that the Git version is displayed.
+
 ---
 
 ## Error: npx Is Not Recognized
 
-Check that Node.js and npm are installed:
+### Solution
+
+1. Check Node.js:
 
 ```cmd
 node -v
+```
+
+2. Check npm:
+
+```cmd
 npm -v
 ```
 
-Then install the project dependencies:
+3. Make sure both commands display versions.
+4. Navigate to the project folder.
+5. Install the project dependencies:
 
 ```cmd
 npm install
 ```
+
+6. Try the Playwright command again.
 
 ---
 
@@ -931,11 +1144,15 @@ npx.cmd playwright test --headed
 
 ## Google Chrome Not Found
 
-Make sure Google Chrome is installed on the Windows computer.
+### Solution
 
-This project is configured to use the Chrome browser channel.
+1. Check whether Google Chrome is installed.
+2. Open Chrome manually.
+3. Confirm that Chrome works.
+4. Close Chrome.
+5. Run the automation again.
 
-Open Google Chrome manually once to verify that it is installed correctly.
+This project is configured to use the Google Chrome browser channel.
 
 ---
 
@@ -974,13 +1191,7 @@ The automation contains locator fallbacks and waits to handle some dynamic chang
 
 ## Test Fails Due to Slow Internet
 
-Run the test again:
-
-### Windows PowerShell
-
-```powershell
-npx.cmd playwright test --headed
-```
+Run the test again.
 
 ### Windows Command Prompt
 
@@ -988,37 +1199,89 @@ npx.cmd playwright test --headed
 npx playwright test --headed
 ```
 
+### Windows PowerShell
+
+```powershell
+npx.cmd playwright test --headed
+```
+
 ---
 
-# 26. Quick Start for Evaluator
+# 27. Quick Start for Evaluator
 
-For a completely new Windows computer, first install:
+For a completely new Windows computer, first make sure the following are installed:
 
 ```text
 1. Node.js
 2. Git
 3. Google Chrome
-4. Internet connection must be available
+4. Internet connection is available
 ```
 
-Then open Windows Command Prompt and run:
+Then open Windows Command Prompt.
+
+### Steps
+
+1. Go to the Desktop:
+
+```cmd
+cd %USERPROFILE%\Desktop
+```
+
+2. Press Enter.
+
+3. Clone the repository:
 
 ```cmd
 git clone https://github.com/Subarna201104/amazon-playwright-automation.git
+```
+
+4. Press Enter and wait for cloning to finish.
+
+5. Enter the project folder:
+
+```cmd
 cd amazon-playwright-automation
+```
+
+6. Press Enter.
+
+7. Install the dependencies:
+
+```cmd
 npm install
+```
+
+8. Press Enter and wait for installation to finish.
+
+9. Run the automation:
+
+```cmd
 npx playwright test --headed
 ```
 
-To open the Playwright report:
+10. Press Enter and wait for the test to complete.
+
+11. Open the HTML report:
 
 ```cmd
 npx playwright show-report
 ```
 
-For Windows PowerShell:
+12. Press Enter.
+
+13. To open the product log:
+
+```cmd
+notepad logs\product-details.log
+```
+
+### Windows PowerShell
+
+Use:
 
 ```powershell
+cd $HOME\Desktop
 git clone https://github.com/Subarna201104/amazon-playwright-automation.git
 cd amazon-playwright-automation
 npm.cmd install
@@ -1028,7 +1291,7 @@ npx.cmd playwright show-report
 
 ---
 
-# 27. System Requirements Summary
+# 28. System Requirements Summary
 
 Before running this project, the Windows computer should have:
 
@@ -1057,7 +1320,7 @@ npm install
 
 ---
 
-# 28. Why Node.js Is Required
+# 29. Why Node.js Is Required
 
 Node.js provides the runtime environment required for the Playwright TypeScript project.
 
@@ -1092,7 +1355,7 @@ It does not need to be reinstalled every time the project is executed.
 
 ---
 
-# 29. Design Approach
+# 30. Design Approach
 
 The project follows the **Page Object Model (POM)** design pattern.
 
@@ -1115,7 +1378,7 @@ This approach improves:
 
 ---
 
-# 30. Environment Notes
+# 31. Environment Notes
 
 The project is designed to run on a **Windows computer** with the required prerequisites installed.
 
@@ -1136,7 +1399,7 @@ The automation captures the currently available live information during executio
 
 ---
 
-# 31. GitHub Repository
+# 32. GitHub Repository
 
 Repository:
 
@@ -1151,28 +1414,44 @@ https://github.com/Subarna201104/amazon-playwright-automation
 ## First-Time Setup - Windows Command Prompt
 
 ```cmd
+cd %USERPROFILE%\Desktop
 git clone https://github.com/Subarna201104/amazon-playwright-automation.git
 cd amazon-playwright-automation
 npm install
+npx playwright --version
 npx playwright test --headed
 ```
 
 ## First-Time Setup - Windows PowerShell
 
 ```powershell
+cd $HOME\Desktop
 git clone https://github.com/Subarna201104/amazon-playwright-automation.git
 cd amazon-playwright-automation
 npm.cmd install
+npx.cmd playwright --version
 npx.cmd playwright test --headed
 ```
 
-## Run Test - PowerShell
+## Run Test - Windows Command Prompt
+
+```cmd
+npx playwright test --headed
+```
+
+## Run Test - Windows PowerShell
 
 ```powershell
 npx.cmd playwright test --headed
 ```
 
-## Open HTML Report - PowerShell
+## Open HTML Report - Windows Command Prompt
+
+```cmd
+npx playwright show-report
+```
+
+## Open HTML Report - Windows PowerShell
 
 ```powershell
 npx.cmd playwright show-report
