@@ -1,23 +1,37 @@
 import { test, expect } from '@playwright/test';
-import { HomePage } from '../pages/HomePage';
-import { SearchResultsPage } from '../pages/SearchResultsPage';
-import { ProductPage } from '../pages/ProductPage';
-import { writeProductLog } from '../utils/productLogger';
+
+import { HomePage }
+  from '../pages/HomePage';
+
+import { SearchResultsPage }
+  from '../pages/SearchResultsPage';
+
+import { ProductPage }
+  from '../pages/ProductPage';
+
+import { writeProductLog }
+  from '../utils/productLogger';
+
 
 test.describe(
   'Amazon.in TV Search Automation',
   () => {
 
     test(
-      'Search 55-inch TVs, select brands, and log the first product',
+      'Search 55-inch TVs, select Sony and Samsung, and log first product',
       async ({ page }, testInfo) => {
 
-        const homePage = new HomePage(page);
+        const homePage =
+          new HomePage(page);
 
         const searchResultsPage =
           new SearchResultsPage(page);
 
-        // STEP 1 - Open Amazon.in
+
+        // ==========================================
+        // STEP 1 - OPEN AMAZON
+        // ==========================================
+
         await test.step(
           'Open Amazon.in',
           async () => {
@@ -33,7 +47,11 @@ test.describe(
           }
         );
 
-        // STEP 2 - Search for Television
+
+        // ==========================================
+        // STEP 2 - SEARCH TELEVISION
+        // ==========================================
+
         await test.step(
           'Search for Television',
           async () => {
@@ -48,7 +66,11 @@ test.describe(
           }
         );
 
-        // STEP 3 - Wait for results
+
+        // ==========================================
+        // STEP 3 - WAIT FOR RESULTS
+        // ==========================================
+
         await test.step(
           'Wait for search results',
           async () => {
@@ -62,46 +84,63 @@ test.describe(
           }
         );
 
-        // STEP 4 - Apply 55-inch filter
+
+        // ==========================================
+        // STEP 4 - APPLY 55-INCH
+        // ==========================================
+
         await test.step(
           'Apply 55-inch TV filter',
           async () => {
 
-            const sizeFilterApplied =
-              await searchResultsPage
-                .tryApplyDisplaySize55Inch();
-
-            expect(
-              sizeFilterApplied
-            ).toBe(true);
+            await searchResultsPage
+              .applyDisplaySize55Inch();
 
             console.log(
-              '55-inch filter applied successfully'
+              '55-inch filter confirmed'
             );
           }
         );
 
-        // STEP 5 - Select two brands
+
+        // ==========================================
+        // STEP 5 - SELECT SONY + SAMSUNG
+        // ==========================================
+
+        let selectedBrands: string[] = [];
+
         await test.step(
-          'Select TV brands',
+          'Select Sony and Samsung brands',
           async () => {
 
-            const selectedBrands =
+            selectedBrands =
               await searchResultsPage
                 .applyBrands();
 
-            console.log(
-              `Selected brands: ${selectedBrands.join(', ')}`
-            );
+            expect(
+              selectedBrands
+            ).toContain('Sony');
+
+            expect(
+              selectedBrands
+            ).toContain('Samsung');
 
             expect(
               selectedBrands
             ).toHaveLength(2);
+
+            console.log(
+              `Selected brands: ${selectedBrands.join(', ')}`
+            );
           }
         );
 
-        // STEP 6 - Open first filtered product
-        let productPage: ProductPage;
+
+        // ==========================================
+        // STEP 6 - OPEN FIRST PRODUCT
+        // ==========================================
+
+        let productPage!: ProductPage;
 
         await test.step(
           'Open first filtered TV product',
@@ -112,7 +151,9 @@ test.describe(
                 .openFirstProduct();
 
             productPage =
-              new ProductPage(openedPage);
+              new ProductPage(
+                openedPage
+              );
 
             console.log(
               'First filtered TV product opened'
@@ -120,7 +161,11 @@ test.describe(
           }
         );
 
-        // STEP 7 - Capture product information
+
+        // ==========================================
+        // STEP 7 - CAPTURE PRODUCT INFORMATION
+        // ==========================================
+
         const productInfo =
           await test.step(
             'Capture complete product information',
@@ -138,20 +183,28 @@ test.describe(
             }
           );
 
-        // STEP 8 - Validate that product is 55 inch
+
+        // ==========================================
+        // STEP 8 - VALIDATE 55-INCH PRODUCT
+        // ==========================================
+
         await test.step(
-          'Validate 55-inch product',
+          'Validate that opened TV is 55 inches',
           async () => {
 
             const productText = `
-              ${productInfo.title}
-              ${productInfo.productDetails}
-              ${productInfo.extras['About this item']}
-            `;
+${productInfo.title}
+
+${productInfo.productDetails}
+
+${productInfo.extras['About this item']}
+`;
 
             expect(
               productText
-            ).toMatch(/55\s*(inch|inches)/i);
+            ).toMatch(
+              /55\s*(inch|inches)/i
+            );
 
             console.log(
               'Validated that opened TV is 55 inches'
@@ -159,7 +212,11 @@ test.describe(
           }
         );
 
-        // STEP 9 - Product title
+
+        // ==========================================
+        // STEP 9 - PRODUCT TITLE
+        // ==========================================
+
         await test.step(
           'Capture Product Title',
           async () => {
@@ -174,7 +231,11 @@ test.describe(
           }
         );
 
-        // STEP 10 - Product price
+
+        // ==========================================
+        // STEP 10 - PRODUCT PRICE
+        // ==========================================
+
         await test.step(
           'Capture Product Price',
           async () => {
@@ -186,10 +247,20 @@ test.describe(
             expect(
               productInfo.price
             ).toBeTruthy();
+
+            expect(
+              productInfo.price
+            ).not.toBe(
+              '(price not found)'
+            );
           }
         );
 
-        // STEP 11 - Customer rating
+
+        // ==========================================
+        // STEP 11 - CUSTOMER RATING
+        // ==========================================
+
         await test.step(
           'Capture Customer Rating',
           async () => {
@@ -200,7 +271,11 @@ test.describe(
           }
         );
 
-        // STEP 12 - About This Item
+
+        // ==========================================
+        // STEP 12 - ABOUT THIS ITEM
+        // ==========================================
+
         await test.step(
           'Capture About This Item',
           async () => {
@@ -217,7 +292,11 @@ test.describe(
           }
         );
 
-        // STEP 13 - Product Specifications
+
+        // ==========================================
+        // STEP 13 - SPECIFICATIONS
+        // ==========================================
+
         await test.step(
           'Capture Product Specifications',
           async () => {
@@ -232,7 +311,11 @@ test.describe(
           }
         );
 
-        // STEP 14 - Brand
+
+        // ==========================================
+        // STEP 14 - BRAND
+        // ==========================================
+
         await test.step(
           'Capture Brand',
           async () => {
@@ -243,7 +326,11 @@ test.describe(
           }
         );
 
-        // STEP 15 - Availability
+
+        // ==========================================
+        // STEP 15 - AVAILABILITY
+        // ==========================================
+
         await test.step(
           'Capture Availability',
           async () => {
@@ -254,7 +341,11 @@ test.describe(
           }
         );
 
+
+        // ==========================================
         // STEP 16 - ASIN
+        // ==========================================
+
         await test.step(
           'Capture ASIN',
           async () => {
@@ -265,7 +356,11 @@ test.describe(
           }
         );
 
-        // STEP 17 - Write log
+
+        // ==========================================
+        // STEP 17 - WRITE LOG
+        // ==========================================
+
         await test.step(
           'Write captured information to product-details.log',
           async () => {
@@ -280,7 +375,11 @@ test.describe(
           }
         );
 
-        // STEP 18 - Attach to report
+
+        // ==========================================
+        // STEP 18 - PLAYWRIGHT REPORT
+        // ==========================================
+
         await test.step(
           'Attach complete product details to Playwright report',
           async () => {
@@ -288,6 +387,12 @@ test.describe(
             const reportData = `
 Amazon.in Product Capture
 =========================
+
+Selected Brands:
+${selectedBrands.join(', ')}
+
+Screen Size:
+55 inches
 
 Product Title:
 ${productInfo.title}
