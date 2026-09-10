@@ -93,16 +93,6 @@ This project is configured to run using **Google Chrome**.
 
 Google Chrome is required because the Playwright configuration uses the Chrome browser channel.
 
-### Steps
-
-1. Open a web browser.
-2. Go to the official Google Chrome website.
-3. Download Google Chrome for Windows.
-4. Open the downloaded installer.
-5. Follow the installation instructions.
-6. Complete the installation.
-7. Open Google Chrome once after installation.
-8. Confirm that Google Chrome opens correctly.
 
 ---
 
